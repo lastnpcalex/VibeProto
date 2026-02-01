@@ -1,31 +1,51 @@
-# VibeProto Skill
+# VibeProto Skill (AT Protocol Investigator)
 
-This directory contains the source code for the `vibe-proto` Gemini CLI skill.
+A persistent Gemini CLI skill for investigating and querying the AT Protocol (Bluesky). This skill equips your AI agent with tools to resolve handles, inspect profiles, and explore the "Atmosphere" using public APIs without needing user credentials.
 
-## Persistence & Usage
+## Capabilities
 
-To ensure this skill persists across sessions and is consistently available:
+*   **Handle Resolution:** Instantly convert `handle.bsky.social` to `did:plc:...`.
+*   **Profile Inspection:** Fetch public profile data (description, avatar, banner) directly from the PDS.
+*   **API Guidance:** Includes a reference map of public AT Protocol APIs (`constellation`, `microcosm`, `pds.ls`) for building custom queries on the fly.
+*   **Extensible:** Designed to be a living repository of ATProto scripts.
 
-1.  **Package the Skill:**
-    Run the packaging script to create a `.skill` file (which is a zip of this directory).
+## Installation
+
+1.  **Clone this repo:**
     ```bash
-    node <path-to-skill-creator>/scripts/package_skill.cjs .
+    git clone https://github.com/lastnpcalex/VibeProto.git
+    cd VibeProto
     ```
 
-2.  **Install the Skill:**
-    Install the packaged file into Gemini's internal registry.
+2.  **Package the skill:**
+    ```bash
+    # Requires the Gemini CLI skill-creator tools
+    node <path-to-skill-creator>/scripts/package_skill.cjs vibe-proto
+    ```
+
+3.  **Install into Gemini:**
     ```bash
     gemini skills install vibe-proto.skill --scope user
     ```
 
-3.  **Update/Edit:**
-    - Edit the files in this directory (the "source of truth").
-    - Re-package and re-install to apply changes.
-    - Run `/skills reload` in your Gemini session.
+4.  **Activate:**
+    In your Gemini session, run:
+    ```
+    /skills reload
+    ```
+
+## Usage
+
+Once installed, you can ask Gemini questions like:
+
+*   *"Who is @support.bsky.team?"* (Triggers `inspect_handle.cjs`)
+*   *"Get the DID for danabra.mov"*
+*   *"Check the profile data for jay.bsky.team"*
 
 ## Directory Structure
 
-- `SKILL.md`: The main definition file. **Needs editing.**
-- `scripts/`: Executable scripts (Node.js, Python, etc.) called by the skill.
-- `references/`: Markdown files with documentation/context loaded on demand.
-- `assets/`: Static files (templates, images) used in output.
+*   `SKILL.md`: The "brain" of the skill. Tells Gemini when and how to use the tools.
+*   `scripts/`: Executable Node.js scripts.
+    *   `inspect_handle.cjs`: Resolves a handle and fetches the profile record.
+*   `references/`: Markdown knowledge base.
+    *   `atproto-apis.md`: List of public API endpoints (PDS, PLC, etc.).
