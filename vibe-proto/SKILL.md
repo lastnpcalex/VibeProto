@@ -1,44 +1,36 @@
 ---
 name: vibe-proto
-description: AT Protocol (Bluesky) investigation and querying agent. Use when the user asks for information about Bluesky users, PDS data, firehose events, or general ATProto network statistics.
+description: AT Protocol (Bluesky) investigator. Triggers when asked to resolve handles, inspect profiles, or query PDS data directly.
 ---
 
 # Vibe Proto (AT Protocol Investigator)
 
 ## Overview
-This skill specializes in exploring and querying the AT Protocol (Bluesky) network. It is designed to function autonomously using public APIs and tools without requiring user credentials whenever possible.
+This skill provides tools and methods for interacting with the AT Protocol network (Bluesky). It favors direct API calls and scripts over browsing.
 
-## Capability: Data Discovery & Querying
+## Tools
 
-When asked to find information on Bluesky/ATProto, use the following strategies:
+### Inspect Handle
+Resolves a Bluesky handle to its DID and fetches the raw profile record.
 
-1.  **Public API Aggregators**: Prefer querying public aggregators that index the network.
-    *   **Microcosm / Constellation**: Use for graph analysis and global network stats.
-    *   **PDSls (Reference)**: Modeled after the `pdsls` capabilities—browsing public PDS records.
+**Script:** `scripts/inspect_handle.cjs`
+**Usage:** `node scripts/inspect_handle.cjs <handle>`
+**Example:** "Get me the profile details for support.bsky.team" -> Runs script.
 
-2.  **Direct PDS Querying**:
-    *   Resolve handles to DIDs (`at://<handle>`).
-    *   Query the user's PDS directly for public records (posts, follows, likes).
-    *   Use `com.atproto.repo.listRecords` and `com.atproto.sync.getRepo`.
+## Capability: Data Discovery
 
-3.  **Firehose Analysis**:
-    *   If real-time data is needed, consider creating a script to tap into the `com.atproto.sync.subscribeRepos` websocket (firehose).
+If the provided scripts are insufficient, use the following API references to build custom queries:
 
-## Reference Tools
+1.  **Identity Resolution**:
+    *   `https://public.api.bsky.app/xrpc/com.atproto.identity.resolveHandle?handle=<HANDLE>`
 
-The skill is aware of the following tools in the ATmosphere:
+2.  **Repository Traversal**:
+    *   `https://public.api.bsky.app/xrpc/com.atproto.repo.listRecords?repo=<DID>&collection=<NSID>`
 
--   **pds.ls (pdsls)**: A web-based explorer for PDS data.
--   **pdsfs**: A FUSE filesystem for mounting PDS repos as read-only filesystems.
+3.  **Reference File**:
+    *   See `references/atproto-apis.md` for a list of endpoints.
 
 ## Workflow
 
-1.  **Identify Target**: Is the user asking about a specific user (Handle/DID), a specific record type (Post), or network-wide trends?
-2.  **Select Tool/API**:
-    *   *Specific User:* Resolve DID -> Query PDS directly or use a profile viewer API.
-    *   *Network Stats:* Query an aggregator (e.g., build a script to query known indexers).
-    *   *Raw Data:* Mount PDS via `pdsfs` (if available) or download repo CAR file.
-3.  **Execution**: Write and execute a script (Node.js/Python) to fetch the data if a direct tool isn't available.
-
-## Advanced: Script Generation
-When no direct tool exists, generate a Node.js script using `@atproto/api` (if available) or standard `fetch` to query XRPC endpoints.
+1.  **Check if a script exists:** If the user wants profile info, use `inspect_handle.cjs`.
+2.  **If no script:** Consult `references/atproto-apis.md` and generate a custom Node.js script using `https` or `fetch`.
