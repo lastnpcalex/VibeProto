@@ -1,13 +1,13 @@
 # VibeProto Skill (AT Protocol Investigator)
 
-A persistent Gemini CLI skill for investigating and querying the AT Protocol (Bluesky). This skill equips your AI agent with tools to resolve handles, inspect profiles, and explore the "Atmosphere" using public APIs without needing user credentials.
+A persistent Gemini CLI skill for investigating and querying the AT Protocol (Bluesky). This skill equips your AI agent with tools to resolve handles, inspect profiles, audit threads, and explore the "Atmosphere" using public APIs without needing user credentials.
 
 ## Capabilities
 
 *   **Handle Resolution:** Instantly convert `handle.bsky.social` to `did:plc:...`.
-*   **Profile Inspection:** Fetch public profile data (description, avatar, banner) directly from the PDS.
-*   **API Guidance:** Includes a reference map of public AT Protocol APIs (`constellation`, `microcosm`, `pds.ls`) for building custom queries on the fly.
-*   **Extensible:** Designed to be a living repository of ATProto scripts.
+*   **Deep Forensics:** Inspect raw record JSON to debug "ghost" posts, missing quotes, and embed errors.
+*   **Thread Analysis:** Extract external links from entire conversation trees.
+*   **Quote Discovery:** Find who quoted a post, checking beyond the standard API limits.
 
 ## Installation
 
@@ -34,18 +34,20 @@ A persistent Gemini CLI skill for investigating and querying the AT Protocol (Bl
     /skills reload
     ```
 
-## Usage
+## Toolset (`vibe-proto/scripts/`)
 
-Once installed, you can ask Gemini questions like:
+All scripts can be run directly via Node.js: `node vibe-proto/scripts/<script_name> <args>`
 
-*   *"Who is @support.bsky.team?"* (Triggers `inspect_handle.cjs`)
-*   *"Get the DID for danabra.mov"*
-*   *"Check the profile data for jay.bsky.team"*
+| Script | Arguments | Description |
+| :--- | :--- | :--- |
+| **`inspect_handle.cjs`** | `<handle>` | Resolves a handle (e.g., `jay.bsky.team`) to DID and fetches the full profile record. |
+| **`inspect_post_record.cjs`** | `<url>` | Fetches the **raw JSON record** of a specific post. Useful for debugging broken embeds, "ghost" quotes, or finding hidden reply chains. |
+| **`get_quotes.cjs`** | `<url>` | Fetches **all** quotes for a specific post, handling pagination to ensure none are missed. |
+| **`extract_thread_links.cjs`** | `<url>` | Crawls a full thread/conversation and extracts all external URLs (great for summarizing reading lists). |
+| **`deep_scan_user.cjs`** | *None* (Edit file) | Audits a user's recent history (last 100 posts) to find mentions of a specific RKey. (Edit the `did` and `targetRkey` in the file). |
+| **`search_post_references.cjs`** | `<url>` | Searches the public index for any text mentions or links to the given post URL. |
+| **`search_constellation.cjs`** | `<url>` | *(Experimental)* Queries the [Constellation](https://microcosm.blue) backlink index for network-wide references. |
 
-## Directory Structure
+## References
 
-*   `vibe-proto/SKILL.md`: The "brain" of the skill. Tells Gemini when and how to use the tools.
-*   `vibe-proto/scripts/`: Executable Node.js scripts.
-    *   `inspect_handle.cjs`: Resolves a handle and fetches the profile record.
-*   `vibe-proto/references/`: Markdown knowledge base.
-    *   `atproto-apis.md`: List of public API endpoints (PDS, PLC, etc.).
+*   `vibe-proto/references/atproto-apis.md`: Cheat sheet of public API endpoints (`plc.directory`, `public.api.bsky.app`, etc.).

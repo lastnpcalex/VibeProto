@@ -31,19 +31,38 @@ async function main() {
     const atUri = `at://${did}/app.bsky.feed.post/${rkey}`;
 
     console.log(`Fetching quotes for: ${atUri}`);
-    const quotesUrl = `https://public.api.bsky.app/xrpc/app.bsky.feed.getQuotes?uri=${atUri}`;
-    const quotesData = await fetchJson(quotesUrl);
+    
+    let cursor = null;
+    let allQuotes = [];
+    
+    do {
+        let quotesUrl = `https://public.api.bsky.app/xrpc/app.bsky.feed.getQuotes?uri=${atUri}&limit=100`;
+        if (cursor) quotesUrl += `&cursor=${cursor}`;
+        
+        const quotesData = await fetchJson(quotesUrl);
+        
+        if (quotesData.posts) {
+            allQuotes = allQuotes.concat(quotesData.posts);
+        }
+        
+        cursor = quotesData.cursor;
+        if (cursor) console.log("Fetching next page...");
+        
+    } while (cursor);
 
-    if (!quotesData.posts || quotesData.posts.length === 0) {
+    if (allQuotes.length === 0) {
       console.log("No quotes found.");
       return;
     }
 
-    console.log(`\n--- Found ${quotesData.posts.length} Quotes ---`);
-    quotesData.posts.forEach((post, i) => {
+    console.log(`\n--- Found ${allQuotes.length} Quotes ---`);
+    allQuotes.forEach((post, i) => {
       console.log(`\n[${i+1}] AUTHOR: ${post.author.handle}`);
       console.log(`TEXT:   ${post.record.text}`);
       console.log(`URI:    ${post.uri}`);
+      
+      // Check for hidden/blocked status
+      if (post.author.viewer && post.author.viewer.muted) console.log(" [MUTED AUTHOR]");
     });
 
   } catch (error) {
