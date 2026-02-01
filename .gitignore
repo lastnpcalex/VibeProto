@@ -1,0 +1,13 @@
+# Gemini Artifacts
+GEMINI.md
+.gemini-clipboard/
+
+# Node
+node_modules/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Build artifacts
+*.skill
